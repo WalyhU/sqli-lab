@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SQL Injection Lab</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Laboratorio local</p>
+          <h1>SQL Injection Lab</h1>
+        </div>
+        <button id="reset-db" class="ghost" type="button">Reiniciar DB</button>
+      </header>
+
+      <section class="notice">
+        <strong>Uso controlado:</strong> esta app incluye endpoints vulnerables a proposito
+        para practicar y comparar con consultas parametrizadas.
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Login</h2>
+            <span class="tag danger">vulnerable vs seguro</span>
+          </div>
+          <form id="login-form" class="stack">
+            <label>
+              Usuario
+              <input id="login-username" autocomplete="off" value="admin" />
+            </label>
+            <label>
+              Password
+              <input id="login-password" autocomplete="off" value="wrong" />
+            </label>
+            <div class="actions">
+              <button data-login="vulnerable" type="button">Probar vulnerable</button>
+              <button data-login="safe" class="secondary" type="button">Probar seguro</button>
+            </div>
+          </form>
+          <div class="chips">
+            <button data-fill-login="' OR '1'='1' --">Bypass clasico</button>
+            <button data-fill-login="admin' --">Comentar password</button>
+            <button data-fill-credentials="ana|pass123">Credenciales validas</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Busqueda de usuarios</h2>
+            <span class="tag">UNION test</span>
+          </div>
+          <form id="search-form" class="stack">
+            <label>
+              Buscar
+              <input id="search-query" autocomplete="off" value="ana" />
+            </label>
+            <div class="actions">
+              <button data-search="vulnerable" type="button">Buscar vulnerable</button>
+              <button data-search="safe" class="secondary" type="button">Buscar seguro</button>
+            </div>
+          </form>
+          <div class="chips">
+            <button data-fill-search="x%' OR '1'='1">Listar todo</button>
+            <button data-fill-search="x%' UNION SELECT 999, username, role, password FROM users --">Extraer passwords</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="results">
+        <div class="panel-head">
+          <h2>Resultado</h2>
+          <span id="status" class="tag muted">sin ejecutar</span>
+        </div>
+        <pre id="output">{}</pre>
+      </section>
+
+      <section class="schema">
+        <div>
+          <h2>Datos semilla</h2>
+          <p>Usuarios de prueba: admin/admin123, ana/pass123, carlos/hunter2, maria/letmein.</p>
+        </div>
+        <button id="load-schema" class="secondary" type="button">Ver schema</button>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
