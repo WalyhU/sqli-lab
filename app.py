@@ -1,9 +1,9 @@
 """
 SQL Injection Lab - Laboratorio academico local.
 
-ESTADO: VULNERABLE (commit "antes" para el analisis SAST).
-Los endpoints *-vulnerable construyen SQL por concatenacion a proposito
-para que SonarQube Cloud los detecte con la regla pythonsecurity:S3649.
+ESTADO: CORREGIDO (commit "despues" para el analisis SAST).
+Los endpoints *-vulnerable ahora usan consultas parametrizadas; se
+mantienen los nombres de ruta para comparar el mismo sink antes/despues.
 
 Ejecutar solo en localhost. No desplegar.
 """
@@ -82,15 +82,15 @@ def login_vulnerable():
     username = payload.get("username", "")   # <-- TAINT SOURCE
     password = payload.get("password", "")   # <-- TAINT SOURCE
 
-    # VULNERABILIDAD: concatenacion directa de input del usuario en SQL.
+    # CORREGIDO: consulta parametrizada, el input nunca se interpreta como SQL.
     query = (
         "SELECT id, username, role, email FROM users "
-        f"WHERE username = '{username}' AND password = '{password}'"
+        "WHERE username = ? AND password = ?"
     )
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(query)                    # <-- TAINT SINK
+    cursor.execute(query, (username, password))
     user = cursor.fetchone()
     conn.close()
 
@@ -106,16 +106,17 @@ def login_vulnerable():
 def users_vulnerable():
     search = request.args.get("q", "")        # <-- TAINT SOURCE
 
-    # VULNERABILIDAD: el parametro de busqueda entra crudo al SQL.
+    # CORREGIDO: parametros con marcadores de posicion, no texto interpolado.
     query = (
         "SELECT id, username, role, email FROM users "
-        f"WHERE username LIKE '%{search}%' OR email LIKE '%{search}%' "
+        "WHERE username LIKE ? OR email LIKE ? "
         "ORDER BY id"
     )
+    like = f"%{search}%"
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(query)                     # <-- TAINT SINK
+    cursor.execute(query, (like, like))
     rows = cursor.fetchall()
     conn.close()
 
